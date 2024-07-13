@@ -1,17 +1,22 @@
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
+using Para.Api;
 using Para.Base.Response;
 
-namespace Para.Api.Controllers
+namespace Pa.Api.Controllers
 {
-    [NonController]
     [ApiController]
     [Route("api/[controller]")]
     public class BooksController : ControllerBase
     {
         private List<Book> list;
+        private readonly IValidator<Book> bookValidator;
 
-        public BooksController()
+        public BooksController(IValidator<Book> validator)
         {
+            bookValidator = validator;
+
             list = new List<Book>();
             list.Add(new Book() { Id = 1, Name = "Test1", Author = "Author1", PageCount = 993 });
             list.Add(new Book() { Id = 2, Name = "Test2", Author = "Author2", PageCount = 234 });
@@ -36,37 +41,49 @@ namespace Para.Api.Controllers
         }
 
         [HttpPost]
-        public ApiResponse Post([FromBody] Book value)
+        public IActionResult Post([FromBody] Book value)
         {
+            ValidationResult result = bookValidator.Validate(value);
+            if (!result.IsValid)
+            {
+                return BadRequest(result.Errors);
+            }
+
             list.Add(value);
-            return new ApiResponse();
+            return Ok(new ApiResponse<List<Book>>(list));
         }
 
         [HttpPut("{id}")]
-        public ApiResponse Put(int id, [FromBody] Book value)
+        public IActionResult Put(int id, [FromBody] Book value)
         {
+            ValidationResult result = bookValidator.Validate(value);
+            if (!result.IsValid)
+            {
+                return BadRequest(result.Errors);
+            }
+
             var item = list.FirstOrDefault(x => x.Id == id);
             if (item is null)
             {
-                return new ApiResponse("Item not found in system.");
+                return NotFound(new ApiResponse<List<Book>>("Item not found in system."));
             }
 
             list.Remove(item);
             list.Add(value);
-            return new ApiResponse();
+            return Ok(new ApiResponse<List<Book>>(list));
         }
 
         [HttpDelete("{id}")]
-        public ApiResponse Delete(int id)
+        public ApiResponse<List<Book>> Delete(int id)
         {
             var item = list.FirstOrDefault(x => x.Id == id);
             if (item is null)
             {
-                return new ApiResponse("Item not found in system.");
+                return new ApiResponse<List<Book>>("Item not found in system.");
             }
 
             list.Remove(item);
-            return new ApiResponse();
+            return new ApiResponse<List<Book>>(list);
         }
     }
 }
