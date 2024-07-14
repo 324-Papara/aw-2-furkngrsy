@@ -19,9 +19,6 @@ namespace Para.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddFluentValidation(fv => 
-            fv.RegisterValidatorsFromAssemblyContaining<BookValidator>()
-            );
 
             services.AddControllers().AddJsonOptions(options =>
             {
@@ -38,13 +35,8 @@ namespace Para.Api
             var connectionStringSql = Configuration.GetConnectionString("MsSqlConnection");
             services.AddDbContext<ParaSqlDbContext>(options => options.UseSqlServer(connectionStringSql));
 
-            var connectionStringPostgre = Configuration.GetConnectionString("PostgresSqlConnection");
-            services.AddDbContext<ParaPostgreDbContext>(options => options.UseNpgsql(connectionStringPostgre));
-
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            // BookValidator'ý dependency injection için ekle
-            services.AddTransient<IValidator<Book>, BookValidator>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
