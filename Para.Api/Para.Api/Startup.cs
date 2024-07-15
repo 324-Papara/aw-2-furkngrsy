@@ -5,6 +5,7 @@ using Para.Data.Context;
 using Para.Data.UnitOfWork;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Para.Bussiness.Validation;
 
 namespace Para.Api
 {
@@ -20,7 +21,17 @@ namespace Para.Api
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers().AddJsonOptions(options =>
+            services.AddControllers()
+            .AddFluentValidation(fv =>
+            {
+                fv.RegisterValidatorsFromAssemblyContaining<CustomerValidator>();
+                fv.RegisterValidatorsFromAssemblyContaining<CustomerAddressValidator>();
+                fv.RegisterValidatorsFromAssemblyContaining<CustomerDetailValidator>();
+                fv.RegisterValidatorsFromAssemblyContaining<CustomerPhoneValidator>();
+            });
+
+            services.AddControllers()
+                .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 options.JsonSerializerOptions.WriteIndented = true;
