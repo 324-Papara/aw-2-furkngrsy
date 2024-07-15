@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Para.Data.Domain;
 using Para.Data.UnitOfWork;
 
@@ -28,6 +29,20 @@ namespace Para.Api.Controllers
         {
             var entity = await unitOfWork.CustomerRepository.GetById(customerId);
             return entity;
+        }
+
+        [HttpGet("with-details")]
+        public async Task<List<Customer>> GetCustomersWithDetails()
+        {
+            var customers = await unitOfWork.CustomerRepository.Include(c => c.CustomerAddresses, c => c.CustomerPhones).ToListAsync();
+            return customers;
+        }
+
+        [HttpGet("by-name/{name}")]
+        public async Task<List<Customer>> GetCustomerByName(string name)
+        {
+            var customers = await unitOfWork.CustomerRepository.Where(c => c.FirstName == name);
+            return customers;
         }
 
         [HttpPost]
